@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storyline Generator</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        #storyline h2 {
+            text-align: center;
+        }
+
+        #storyline p {
+            text-align: justify;
+            margin: 10px 0;
+        }
+
+        #start-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 20px;
+            border: none;
+            background: white;
+            color: black;
+            cursor: pointer;
+        }
+
+        .cinematic-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: black;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            display: none;
+        }
+
+        .cinematic-view h1 {
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .cinematic-view h2 {
+            margin-bottom: 40px;
+        }
+
+        .cinematic-view button {
+            padding: 10px 20px;
+            font-size: 20px;
+            border: none;
+            background: white;
+            color: black;
+            cursor: pointer;
+        }
+
+        .cinematic-view button:disabled {
+            background: gray;
+        }
+    </style>
+</head>
+
+<body>
+    <form method="POST" id="userForm">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="storyline">
+        <!-- Storyline will be inserted here -->
+    </div>
+
+    <button id="start-btn">Start Visual Representation</button>
+
+    <div class="cinematic-view" id="cinematicView">
+        <h1 id="cinematicTitle">Title</h1>
+        <h2 id="cinematicNarration">Narration</h2>
+        <button id="continueBtn">Continue</button>
+    </div>
+
+    <script>
+        let storyline = JSON.parse('{{ storyline | escapejs }}');
+        let currentIndex = 0;
+
+        const storylineDiv = document.getElementById('storyline');
+        const startBtn = document.getElementById('start-btn');
+        const cinematicView = document.getElementById('cinematicView');
+        const cinematicTitle = document.getElementById('cinematicTitle');
+        const cinematicNarration = document.getElementById('cinematicNarration');
+        const continueBtn = document.getElementById('continueBtn');
+
+        storyline.forEach((section, index) => {
+            let sectionDiv = document.createElement('div');
+            sectionDiv.innerHTML = `
+                <h2>${section.Title}</h2>
+                <p>${section.Narration}</p>
+            `;
+            storylineDiv.appendChild(sectionDiv);
+        });
+
+        startBtn.addEventListener('click', () => {
+            startBtn.style.display = 'none';
+            storylineDiv.style.display = 'none';
+            cinematicView.style.display = 'flex';
+            showSection();
+        });
+
+        continueBtn.addEventListener('click', () => {
+            currentIndex++;
+            if (currentIndex < storyline.length) {
+                showSection();
+            } else {
+                continueBtn.disabled = true;
+                continueBtn.textContent = 'End of Storyline';
+            }
+        });
+
+        function showSection() {
+            let section = storyline[currentIndex];
+            cinematicTitle.textContent = section.Title;
+            cinematicNarration.textContent = section.Narration;
+        }
+    </script>
+</body>
+
+</html>
